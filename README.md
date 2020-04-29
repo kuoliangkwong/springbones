@@ -1,4 +1,8 @@
 # Spring Bones
+
+## This branch changes:
+- Enabled bone value change for all selected pose bones
+
 Blender addon to add spring/bouncy dynamic effect to bones.
 
 ![alt text](https://github.com/artellblender/springbones/blob/master/bbones_chain.gif)
