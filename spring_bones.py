@@ -823,22 +823,34 @@ def register():
     bpy.types.Scene.sb_global_spring = bpy.props.BoolProperty(name="Enable spring", default = False)#, update=update_global_spring)
     bpy.types.Scene.sb_global_spring_frame = bpy.props.BoolProperty(name="Enable Spring", description="Enable Spring on frame change only", default = False)
     bpy.types.Scene.sb_show_colliders = bpy.props.BoolProperty(name="Show Colliders", description="Show active colliders names", default = False)
-    bpy.types.PoseBone.sb_bone_spring = bpy.props.BoolProperty(name="Enabled", default=False, description="Enable spring effect on this bone")
-    bpy.types.PoseBone.sb_bone_collider = bpy.props.BoolProperty(name="Collider", default=False, description="Enable this bone as collider")
-    bpy.types.PoseBone.sb_collider_dist = bpy.props.FloatProperty(name="Collider Distance", default=0.5, description="Minimum distance to handle collision between the spring and collider bones")
-    bpy.types.PoseBone.sb_collider_force = bpy.props.FloatProperty(name="Collider Force", default=1.0, description="Amount of repulsion force when colliding")
-    bpy.types.PoseBone.sb_stiffness = bpy.props.FloatProperty(name="Stiffness", default=0.5, min = 0.01, max = 1.0, description="Bouncy/elasticity value, higher values lead to more bounciness")
-    bpy.types.PoseBone.sb_damp = bpy.props.FloatProperty(name="Damp", default=0.7, min=0.0, max = 10.0, description="Speed/damping force applied to the bone to go back to it initial position") 
-    bpy.types.PoseBone.sb_gravity = bpy.props.FloatProperty(name="Gravity", description="Additional vertical force to simulate gravity", default=0.0, min=-100.0, max = 100.0) 
-    bpy.types.PoseBone.sb_bone_rot = bpy.props.BoolProperty(name="Rotation", default=False, description="The spring effect will apply on the bone rotation instead of location")
-    bpy.types.PoseBone.sb_lock_axis = bpy.props.EnumProperty(items=(('NONE', 'None', ""), ('+X', '+X', ''), ('-X', '-X', ''), ('+Y', "+Y", ""), ('-Y', '-Y', ""), ('+Z', '+Z', ""), ('-Z', '-Z', '')), default="NONE")
+    bpy.types.PoseBone.sb_bone_spring = bpy.props.BoolProperty(name="Enabled", default=False, description="Enable spring effect on this bone", update = funp("sb_bone_spring"))
+    bpy.types.PoseBone.sb_bone_collider = bpy.props.BoolProperty(name="Collider", default=False, description="Enable this bone as collider", update = funp("sb_bone_collider"))
+    bpy.types.PoseBone.sb_collider_dist = bpy.props.FloatProperty(name="Collider Distance", default=0.5, description="Minimum distance to handle collision between the spring and collider bones", update = funp("sb_collider_dist"))
+    bpy.types.PoseBone.sb_collider_force = bpy.props.FloatProperty(name="Collider Force", default=1.0, description="Amount of repulsion force when colliding", update = funp("sb_collider_force"))
+    bpy.types.PoseBone.sb_stiffness = bpy.props.FloatProperty(name="Stiffness", default=0.5, min = 0.01, max = 1.0, description="Bouncy/elasticity value, higher values lead to more bounciness", update = funp("sb_stiffness"))
+    bpy.types.PoseBone.sb_damp = bpy.props.FloatProperty(name="Damp", default=0.7, min=0.0, max = 10.0, description="Speed/damping force applied to the bone to go back to it initial position", update = funp("sb_damp")) 
+    bpy.types.PoseBone.sb_gravity = bpy.props.FloatProperty(name="Gravity", description="Additional vertical force to simulate gravity", default=0.0, min=-100.0, max = 100.0, update = funp("sb_gravity")) 
+    bpy.types.PoseBone.sb_bone_rot = bpy.props.BoolProperty(name="Rotation", default=False, description="The spring effect will apply on the bone rotation instead of location", update = funp("sb_bone_rot") )
+    bpy.types.PoseBone.sb_lock_axis = bpy.props.EnumProperty(items=(('NONE', 'None', ""), ('+X', '+X', ''), ('-X', '-X', ''), ('+Y', "+Y", ""), ('-Y', '-Y', ""), ('+Z', '+Z', ""), ('-Z', '-Z', '')), default="NONE", update = funp("sb_lock_axis"))
     bpy.types.Object.sb_object_collider = bpy.props.BoolProperty(name="Collider", default=False, description="Enable this bone as collider")
     bpy.types.Object.sb_collider_dist = bpy.props.FloatProperty(name="Collider Distance", default=0.5, description="Minimum distance to handle collision between the spring and collider bones")
     bpy.types.Object.sb_collider_force = bpy.props.FloatProperty(name="Collider Force", default=1.0, description="Amount of repulsion force when colliding")
     bpy.types.PoseBone.sb_collide = bpy.props.BoolProperty(name="Colliding", default = True, description="The bone will collide with other colliders")#, update=update_global_spring)
     bpy.types.PoseBone.sb_global_influence = bpy.props.FloatProperty(name="Influence", default = 1.0, min=0.0, max=1.0, description="Global influence of spring motion")#, update=update_global_spring)
-    
-    
+
+inop = False 
+def funp(prop):
+    def f(self,context):
+        global inop
+        if(inop):
+            return
+        inop = True
+        currentBone = context.active_pose_bone 
+        for poseBone in context.selected_pose_bones:
+            setattr(poseBone, prop, getattr(currentBone, prop))
+        inop = False
+    return f
+
 def unregister():
     from bpy.utils import unregister_class
     
